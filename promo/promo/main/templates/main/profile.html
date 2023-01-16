@@ -1,0 +1,51 @@
+{% extends "main/base.html" %}
+{% block title %}
+<title>Promo login</title>
+{% endblock %}
+
+{% block style %}
+<style type="text/css">
+    ol.breadcrumb {
+        background-color: white;
+    }
+</style>
+{% endblock %}
+{% block content%}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item active" aria-current="page">Profile</li>
+        </ol>
+      </nav>
+    <p>
+    </p>
+    <h3>Профиль</h3>
+    <p>
+    </p>
+    <form method="POST" class="form-group" style="width: 300px;" action="/profile/">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="text" class="form-control" placeholder="Введите email" name="email" maxlength="32" required=""
+                id="id_email" value="{{ profile.email }}">
+        </div>
+        <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" class="form-control" placeholder="Введите имя" name="name" maxlength="32" required=""
+                id="id_name" value="{{ profile.name }}">
+        </div>
+        <div class="form-group">
+            <label for="surname">Фамилия</label>
+            <input type="text" class="form-control" placeholder="Введите фамилию" name="surname" maxlength="32"
+                required="" id="id_surname" value="{{ profile.surname }}">
+        </div>
+        <div class="form-group">
+            <label for="phone">Телефон</label>
+            <input type="text" class="form-control" placeholder="Введите телефон" name="phone" maxlength="32"
+                required="" id="id_phone" value="{{ profile.phone }}">
+        </div>
+        {{ form.errors.name }}
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+</div>
+{% endblock %}

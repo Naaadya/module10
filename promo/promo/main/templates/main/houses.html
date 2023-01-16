@@ -1,0 +1,69 @@
+{% extends "main/base.html" %}
+{% block title %}
+    <title>Promo login</title>
+{% endblock %}
+
+{% block style %}
+<style type="text/css">
+  ol.breadcrumb {
+    background-color: white;
+  }
+</style>
+{% endblock %}
+{% block content%}
+<div class="container">
+    <!--<ul class="nav justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Logout</a>
+        </li>
+      </ul>-->
+   <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/company">Companies</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Houses</li>
+        </ol>
+      </nav>
+    <h1> Houses page </h1>
+    <p>Имя: {{ name}}</p>
+    <p>Последний логин: {{lastLogin}}</p>
+    <p>Email: {{email}}</p>
+    <p><a href="../company/{{company_id}}/statistic">Статистика</a></p>
+    <br>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Adress</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for house in houses %}
+             <tr>
+                <th scope="row">{{ house.id }}</th>
+                <td><a href="../company/{{company_id}}/{{ house.id }}">{{ house.address }}</a></td>
+                <td>
+                    <form method="POST" action="/deleteHouse/{{company_id}}">
+                        {% csrf_token %}
+                        <input type="hidden" name="house_id" value="{{ house.id }}"/>
+                        <button type="submit" name="delete" class="btn btn-primary">Удалить</button>
+                    </form>
+                </td>
+             </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    <br>
+    <form method="POST" class="form-group" style="width: 400px;">
+        {% csrf_token %}
+        <!--{{ form.name }}-->
+        <div class="form-group">
+            <label for="name">Адрес</label>
+            <input type="text" class="form-control" placeholder="Введите адрес" name="address" maxlength="200" required="" id="id_address">
+            <small id="nameHelp" class="form-text text-muted">Имя должно быть уникальным</small>
+        </div>
+        {{ form.errors.name }}
+        <button type="submit" class="btn btn-primary">Создать адрес</button>
+    </form>
+</div>
+{% endblock %}

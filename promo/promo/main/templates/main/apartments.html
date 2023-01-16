@@ -1,0 +1,119 @@
+{% extends "main/base.html" %}
+{% block title %}
+    <title>Promo login</title>
+{% endblock %}
+
+{% block style %}
+<style type="text/css">
+  .breadcrumb {
+    background-color: white;
+  }
+</style>
+{% endblock %}
+
+{% block content%}
+<div class="container">
+  <!--<ul class="nav justify-content-end">
+    <li class="nav-item">
+      <a class="nav-link active" aria-current="page" href="#">Logout</a>
+    </li>
+  </ul>-->
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/company">Companies</a></li>
+      <li class="breadcrumb-item"><a href="/company/{{company_id}}">Houses</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Apartments</li>
+    </ol>
+  </nav>
+    <h1> Apartments page </h1>
+    <p>Имя: {{ name}}</p>
+    <p>Последний логин: {{lastLogin}}</p>
+    <p>Email: {{email}}</p>
+    <br>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Number</th>
+            <th scope="col">Open</th>
+            <th scope="col">DateTime</th>
+            <th scope="col">Reaction</th>
+            <th scope="col">Name</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Comment</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for apartment in apartments %}
+             <tr>
+                <th scope="row">{{ apartment.id }}</th>
+                <td>{{ apartment.number }}</td>
+                <td>{{ apartment.openStr }}</td>
+                <td>{{ apartment.date_time }}</td>
+                <td>{{ apartment.reactionStr }}</td>
+                <td>{{ apartment.name }}</td>
+                <td>{{ apartment.phone }}</td>
+                <td>{{ apartment.comment }}</td>
+                <td>
+                    <form method="POST" action="/deleteApartment/{{company_id}}/{{house_id}}"> 
+                        {% csrf_token %}
+                        <input type="hidden" name="apartment_id" value="{{ apartment.id }}"/>
+                        <button type="submit" name="delete" class="btn btn-primary">Удалить</button>
+                    </form>
+                </td>
+             </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    <br>
+    <form method="POST" class="form-group" style="width: 400px;">
+        {% csrf_token %}
+        <!--{{ form.name }}-->
+        <div class="form-group">
+            <label for="number">Номер квартиры</label>
+            <input type="number" class="form-control" placeholder="Введите номер квартиры" name="number" maxlength="200" required="" id="id_number">
+            <!--<small id="nameHelp" class="form-text text-muted">Имя должно быть уникальным</small>-->
+            {{ form.errors.number }}
+        </div>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="open" id="id_open">
+            <label class="form-check-label" for="open">Открыли дверь</label>
+          </div>
+          <br>
+          <label>Реакция:</label>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="reaction" id="neutralRadios" value="0">
+            <label class="form-check-label" for="neutralRadios">
+              нейтральная
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="reaction" id="pozitivRadios" value="1">
+            <label class="form-check-label" for="pozitivRadios">
+              позитивная
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="reaction" id="negativeRadios" value="2">
+            <label class="form-check-label" for="negativeRadios">
+              негативная
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="name">Имя</label>
+            <input type="text" class="form-control" placeholder="Введите имя" name="name" maxlength="200" id="id_name">
+        </div>
+        <div class="form-group">
+            <label for="phone">Телефон</label>
+            <input type="text" class="form-control" placeholder="Введите телефон" name="phone" maxlength="200" id="id_phone">
+        </div>
+         <div class="form-group">
+        <label for="comment">Коментарий</label>
+        <input type="text" class="form-control" placeholder="Введите коментарий" name="comment" maxlength="200" id="id_comment">
+       </div>
+        {{ form.errors.name }}
+        <br>
+        <button type="submit" class="btn btn-primary">Добавить квартиру</button>
+    </form>
+</div>
+{% endblock %}

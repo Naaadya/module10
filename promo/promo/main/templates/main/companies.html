@@ -1,0 +1,64 @@
+{% extends "main/base.html" %}
+{% block title %}
+    <title>Promo login</title>
+{% endblock %}
+{% block style %}
+<style type="text/css">
+  .breadcrumb {
+    background-color: white;
+  }
+</style>
+{% endblock %}
+{% block content%}
+<div class="container">
+    <!--<ul class="nav justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="#">Logout</a>
+        </li>
+      </ul>-->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item active" aria-current="page">Companies</li>
+        </ol>
+      </nav>
+    <h1> Companies page </h1>
+    <p>Логин: {{ name}}</p>
+    <br>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for company in companies %}
+             <tr>
+                <th scope="row">{{ company.id }}</th>
+                <td><a href="../company/{{company.id}}">{{ company.name }}</a></td>
+                <td>
+                    <form method="POST" action="/deleteCompany/">
+                        {% csrf_token %}
+                        <input type="hidden" name="company_id" value="{{ company.id }}"/>
+                        <button type="submit" name="delete" class="btn btn-primary">Удалить</button>
+                    </form>
+                </td>
+             </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+    <br>
+    <form method="POST" class="form-group" style="width: 400px;">
+        {% csrf_token %}
+        <!--{{ form.name }}-->
+        <div class="form-group">
+            <label for="name">Имя компании</label>
+            <input type="text" class="form-control" placeholder="Введите имя компании" name="name" maxlength="200" required="" id="id_name">
+            <small id="nameHelp" class="form-text text-muted">Имя должно быть уникальным</small>
+        </div>
+        {{ form.errors.name }}
+        <button type="submit" class="btn btn-primary">Создать компанию</button>
+    </form>
+</div>
+{% endblock %}
