@@ -27,7 +27,68 @@
     <p>Имя: {{ name}}</p>
     <p>Последний логин: {{lastLogin}}</p>
     <p>Email: {{email}}</p>
-    <p><a href="../company/{{company_id}}/statistic">Статистика</a></p>
+
+    <p>
+      <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+        Show me statistics!
+      </button>
+    </p>
+    <div class="collapse" id="collapseExample">
+      <div class="card card-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">House ID</th>
+              <th scope="col">Нейтральная реакция (%)</th>
+              <th scope="col">Положительная реакция (%)</th>
+              <th scope="col">Отрицательная реакция (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+              {% for item in reactions_by_house %}
+               <tr>
+                  <td><a href="/company/{{company_id}}/{{ item.houseId }}">{{ item.houseAddress }}</a></td>
+                  <td scope="row">{{ item.neutral }} ({{ item.neutralPercent }})</td>
+                  <td scope="row">{{ item.positive }} ({{ item.positivePercent }})</td>
+                  <td scope="row">{{ item.negative }} ({{ item.negativePercent }})</td>
+               </tr>
+              {% endfor %}
+              <tr>
+                <td>Total</td>
+                <td scope="row">{{ total_reactions.neutral }} ({{ total_reactions.neutralPercent }})</td>
+                <td scope="row">{{ total_reactions.positive }} ({{ total_reactions.positivePercent }})</td>
+                <td scope="row">{{ total_reactions.negative }} ({{ total_reactions.negativePercent }})</td>
+             </tr>
+          </tbody>
+        </table>
+      <br>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">House ID</th>
+            <th scope="col">Открытых дверей (%)</th>
+            <th scope="col">Закрытых дверей (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in opened_by_house %}
+             <tr>
+                <td><a href="/company/{{company_id}}/{{ item.houseId }}">{{ item.houseAddress }}</a></td>
+                <td scope="row">{{ item.opened }} ({{ item.openedPercent }})</td>
+                <td scope="row">{{ item.closed }} ({{ item.closedPercent }})</td>
+             </tr>
+            {% endfor %}
+            <tr>
+              <td>Total</td>
+              <td scope="row">{{ total_opened.opened }} ({{ total_opened.openedPercent }})</td>
+              <td scope="row">{{ total_opened.closed }} ({{ total_opened.closedPercent }})</td>
+            </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+
     <br>
     <table class="table">
         <thead>
