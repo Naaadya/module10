@@ -9,7 +9,6 @@ urlpatterns = [
     path('company/', views.companies, name = 'Company'),
     path('deleteCompany/', views.deleteCompany),
     path('company/<int:company_id>', views.houses),
-    path('company/<int:company_id>/statistic', views.statistic),
     path('deleteHouse/<int:company_id>', views.deleteHouse),
     path('company/<int:company_id>/<int:house_id>', views.apartments),
     path('deleteApartment/<int:company_id>/<int:house_id>',views.deleteApartment)

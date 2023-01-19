@@ -24,14 +24,18 @@
         </ol>
       </nav>
     <h1> Houses page </h1>
-    <p>Имя: {{ name}}</p>
+    <!--<p>Количество и процент полученных контактов в компании: {{contacts_total}} и {{contacts_h}}</p>-->
     <p>Последний логин: {{lastLogin}}</p>
     <p>Email: {{email}}</p>
-
     <p>
       <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
         Show me statistics!
       </button>
+    </p>
+    <div class="badge bg-primary text-wrap" style="width: 35rem;font-size: medium;">
+      Количество и процент полученных контактов в компании: {{contacts_total}} и {{contacts_h}}
+    </div>
+    <p>
     </p>
     <div class="collapse" id="collapseExample">
       <div class="card card-body">

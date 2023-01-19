@@ -172,8 +172,14 @@ on total.house_id=closed.house_id ''')
                 closed_doors = closed_doors + i.closed_doors
 
         total_opened = OpenItemHtmlModel(None, None, total_doors, opened_doors, closed_doors)
+
+        contacts = Apartment.objects.raw(f'''SELECT a.id, count(*) as contacts from main_apartment a inner join main_house h on a.house_id = h.id where h.company_id={company_id} and a.name is NOT NULL and a.name is not "" ''')
+        total_apartments = Apartment.objects.raw('''SELECT a.id, count(*) as "total_apartments" from main_apartment a inner join main_house h on a.house_id = h.id where h.company_id=1 ''')
+        
+        contacts_h = f"{round(contacts[0].contacts * 100/total_apartments[0].total_apartments)}%"
+        contacts_total = contacts[0].contacts
         #============================
-        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened}
+        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened, "contacts":contacts, "contacts_h":contacts_h, "contacts_total":contacts_total}
         return render(request,"main/houses.html", context=data)
     return  HttpResponse('unauthorized access!')
 
@@ -232,62 +238,8 @@ class OpenItemHtmlModel:
         else:
             self.closed = "-"
             self.closedPercent = "-"
-        
 
-def statistic(request, company_id):
-    if request.user.is_authenticated:
-        reactions_by_h = Apartment.objects.raw(''' select total.id, total.house_id, total.address, total.total_reaction, neutral.neutral_reaction, positive.positive_reaction, negative.negative_reaction  FROM
-(SELECT a.id, h.address, count(*) as total_reaction, a.house_id from main_apartment a inner join main_house h on a.house_id = h.id where a.reaction is not null GROUP BY a.house_id) as total
-left  join 
-(SELECT count(*) as neutral_reaction, house_id from main_apartment GROUP BY house_id, reaction having reaction=0)
-as neutral on total.house_id = neutral.house_id left join 
-(SELECT count(*) as positive_reaction, house_id from main_apartment GROUP BY house_id, reaction having reaction=1)
-as positive on total.house_id = positive.house_id left join
-(SELECT count(*) as negative_reaction, house_id from main_apartment GROUP BY house_id, reaction having reaction=2)
-as negative on total.house_id = negative.house_id ''')
-        
-        reactions_by_house = []
-        total_reactions = 0
-        neutral_reactions = 0
-        positive_reactions = 0
-        negative_reactions = 0
-        for i in reactions_by_h:
-            reactions_by_house.append(ReactionItemHtmlModel(i.house_id, i.address, i.total_reaction, i.neutral_reaction, i.positive_reaction, i.negative_reaction))
-            total_reactions = total_reactions + i.total_reaction
-            if i.neutral_reaction is not None:
-                neutral_reactions = neutral_reactions + i.neutral_reaction
-            if i.positive_reaction is not None:
-                positive_reactions = positive_reactions + i.positive_reaction
-            if i.negative_reaction is not None:
-                negative_reactions = negative_reactions + i.negative_reaction
-        total_reactions = ReactionItemHtmlModel(None, None, total_reactions, neutral_reactions, positive_reactions, negative_reactions)
-
-        opened_by_h = Apartment.objects.raw(''' select total.id, total.address, total.total_doors, total.house_id, opened.opened_doors, closed.closed_doors from 
-(SELECT a.id, h.address, count(*) as total_doors, a.house_id from main_apartment a inner join main_house h on a.house_id = h.id GROUP BY a.house_id) as total
-left join  (SELECT count(*) as opened_doors, house_id from main_apartment GROUP BY house_id, open having open=1) as opened
-on total.house_id=opened.house_id
-left JOIN (SELECT count(*) as closed_doors, house_id from main_apartment GROUP BY house_id, open having open=0) as closed
-on total.house_id=closed.house_id ''')
-
-        opened_by_house = []
-        total_doors = 0
-        opened_doors = 0
-        closed_doors = 0
-        for i in opened_by_h:
-            opened_by_house.append(OpenItemHtmlModel(i.house_id, i.address, i.total_doors, i.opened_doors, i.closed_doors))
-            total_doors = total_doors + i.total_doors
-            if i.opened_doors is not None:
-                opened_doors = opened_doors + i.opened_doors
-            if i.closed_doors is not None:
-                closed_doors = closed_doors + i.closed_doors
-
-        total_opened = OpenItemHtmlModel(None, None, total_doors, opened_doors, closed_doors)
-
-        user = User.objects.get(id=request.user.id)
-        profile = Profile.objects.get(user_id=request.user.id)
-        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened}
-        return render(request,"main/statistic.html", context=data)
-    return  HttpResponse('unauthorized access!')
+    
 
 def apartments(request,house_id,company_id):
     if request.user.is_authenticated:
