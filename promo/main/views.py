@@ -7,6 +7,7 @@ from main.models import Profile, Company, House, Apartment
 from main.models import REACTION
 from .forms import CompanyForm, companyDetailsForm, houseDetailsForm
 from django.db import connection
+from django.db import reset_queries
 
 from datetime import datetime
 from django.utils import timezone
@@ -81,8 +82,10 @@ def profile(request):
 
 def companies(request):
     if request.user.is_authenticated:
+        reset_queries() #отсекаем запросы админики которые были до этого
         user = User.objects.get(id=request.user.id)
         profile = Profile.objects.get(user_id=request.user.id)
+        
         if request.method == "POST":
             form = CompanyForm(request.POST) #Создаём экземпляр формы и заполняем данными из запроса
             if form.is_valid():
@@ -95,6 +98,7 @@ def companies(request):
         else:
             form = CompanyForm() # GET метод - создаём пустую форму
         companies = Company.objects.filter(profile_id=profile.id)
+        print(connection.queries) #выводим sql запросы которые генерирует orm
         data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "companies": companies, 'form': form}
         return render(request,"main/companies.html", context=data)
     return  HttpResponse('unauthorized access!')
