@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from main.models import Profile, Company, House, Apartment
 from main.models import REACTION
 from .forms import CompanyForm, companyDetailsForm, houseDetailsForm
+from django.db import connection
 
 from datetime import datetime
 from django.utils import timezone
@@ -103,8 +104,17 @@ def deleteCompany(request):
     if request.user.is_authenticated and request.method == "POST":
         user = User.objects.get(id=request.user.id)
         profile = Profile.objects.get(user_id=request.user.id)
-        company = Company.objects.get(id=int(request.POST['company_id']))
-        company.delete()
+        company_id = int(request.POST['company_id'])
+        company = Company.objects.get(id=company_id)
+        if company.profile_id != profile.id:#удалять можно только свои компании
+            return  HttpResponse('unauthorized access!')
+        with connection.cursor() as cursor:
+            res_a = cursor.execute(f'''Delete from main_apartment where id in (SELECT a.id as a_id FROM main_company as c inner join main_house h on h.company_id = c.id inner join main_apartment a on a.house_id=h.id where c.id={company_id})''')
+            print(f"удалено {res_a.rowcount} строк из таблицы main_apartment")
+            res_h = cursor.execute(f'''Delete from main_house where id in (SELECT h.id as h_id FROM main_company as c inner join main_house h on h.company_id = c.id where c.id={company_id})''')
+            print(f"удалено {res_h.rowcount} строк из таблицы main_house")
+            res_c = cursor.execute(f'''Delete from main_company where id in ({company_id})''')
+            print(f"удалено {res_c.rowcount} строк из таблицы main_company")
         return redirect("/company/")
     return  HttpResponse('unauthorized access!')
 
@@ -186,6 +196,9 @@ on total.house_id=closed.house_id ''')
 def deleteHouse(request,company_id):
     if request.user.is_authenticated and request.method == "POST":
         houses = House.objects.get(id=int(request.POST['house_id']))
+        with connection.cursor() as cursor:
+            res = cursor.execute("DELETE from main_apartment WHERE house_id = %s", [int(request.POST['house_id'])])
+            print(res)
         houses.delete()
         return redirect(f"/company/{company_id}")
     return  HttpResponse('unauthorized access!')
