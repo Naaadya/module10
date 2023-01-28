@@ -200,10 +200,15 @@ on total.house_id=closed.house_id ''')
 
         profiles = Profile.objects.all()
 
+
+        existed_profile_ids = list(ProfileCompany.objects.filter(company_id=company_id).values_list("profile_id", flat=True))
+        profiles_orm = Profile.objects.exclude(id__in=existed_profile_ids)
+
+
         contacts_h = f"{round(contacts[0].contacts * 100/total_apartments[0].total_apartments)}%"
         contacts_total = contacts[0].contacts
         #============================
-        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened, "contacts":contacts, "contacts_h":contacts_h, "contacts_total":contacts_total,"companyUsers":companyUsers, "profiles": profiles}
+        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened, "contacts":contacts, "contacts_h":contacts_h, "contacts_total":contacts_total,"companyUsers":companyUsers, "profiles": profiles_orm}
         return render(request,"main/houses.html", context=data)
     return  HttpResponse('unauthorized access!')
 
