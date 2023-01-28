@@ -35,8 +35,8 @@
         <tbody>
             {% for company in companies %}
              <tr>
-                <th scope="row">{{ company.id }}</th>
-                <td><a href="../company/{{company.id}}">{{ company.name }}</a></td>
+                <th scope="row">{{ company.company.id }}</th>
+                <td><a href="../company/{{company.company.id}}">{{ company.company.name }}</a></td>
                 <td>
                     <form method="POST" action="/deleteCompany/">
                         {% csrf_token %}

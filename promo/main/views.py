@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
-from main.models import Profile, Company, House, Apartment
+from main.models import Profile,ProfileCompany, Company, House, Apartment
 from main.models import REACTION
 from .forms import CompanyForm, companyDetailsForm, houseDetailsForm
 from django.db import connection
@@ -82,23 +82,29 @@ def profile(request):
 
 def companies(request):
     if request.user.is_authenticated:
-        reset_queries() #отсекаем запросы админики которые были до этого
+        
         user = User.objects.get(id=request.user.id)
         profile = Profile.objects.get(user_id=request.user.id)
-        
+        #reset_queries() #отсекаем запросы которые были до этого
         if request.method == "POST":
             form = CompanyForm(request.POST) #Создаём экземпляр формы и заполняем данными из запроса
             if form.is_valid():
                 #Сохранение компании в БД
                 company = Company()
                 company.name = form.cleaned_data['name']
-                company.profile_id = profile.id
                 company.save()
+                profile_company = ProfileCompany()
+                profile_company.company_id = company.id
+                profile_company.profile_id = profile.id
+                profile_company.save()
+
                 return redirect("/company/")
         else:
             form = CompanyForm() # GET метод - создаём пустую форму
-        companies = Company.objects.filter(profile_id=profile.id)
-        print(connection.queries) #выводим sql запросы которые генерирует orm
+        companies = ProfileCompany.objects.select_related("company").filter(profile_id=profile.id)
+        #print(connection.queries) #выводим sql запросы которые генерирует orm
+        print(companies.query)
+        
         data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "companies": companies, 'form': form}
         return render(request,"main/companies.html", context=data)
     return  HttpResponse('unauthorized access!')
@@ -190,12 +196,28 @@ on total.house_id=closed.house_id ''')
         contacts = Apartment.objects.raw(f'''SELECT a.id, count(*) as contacts from main_apartment a inner join main_house h on a.house_id = h.id where h.company_id={company_id} and a.name is NOT NULL and a.name is not "" ''')
         total_apartments = Apartment.objects.raw('''SELECT a.id, count(*) as "total_apartments" from main_apartment a inner join main_house h on a.house_id = h.id where h.company_id=1 ''')
         
+        companyUsers = ProfileCompany.objects.select_related("profile").filter(company_id=company_id)
+
+        profiles = Profile.objects.all()
+
         contacts_h = f"{round(contacts[0].contacts * 100/total_apartments[0].total_apartments)}%"
         contacts_total = contacts[0].contacts
         #============================
-        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened, "contacts":contacts, "contacts_h":contacts_h, "contacts_total":contacts_total}
+        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile, "houses": houses, "company_id":company_id, "reactions_by_house": reactions_by_house, "total_reactions":total_reactions, "opened_by_house":opened_by_house, "total_opened":total_opened, "contacts":contacts, "contacts_h":contacts_h, "contacts_total":contacts_total,"companyUsers":companyUsers, "profiles": profiles}
         return render(request,"main/houses.html", context=data)
     return  HttpResponse('unauthorized access!')
+
+def addUserToCompany(request, company_id):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            #сохранение в базу
+            profile_company = ProfileCompany()
+            profile_company.company_id = int(company_id)
+            profile_company.profile_id = int(request.POST['user_select'])
+            profile_company.save()
+            return redirect(f"/company/{company_id}")
+    return  HttpResponse('unauthorized access!')
+
 
 def deleteHouse(request,company_id):
     if request.user.is_authenticated and request.method == "POST":

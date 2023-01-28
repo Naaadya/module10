@@ -12,7 +12,11 @@ class Profile(models.Model):
 
 class Company(models.Model):
     name = models.CharField(max_length=200)
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    #profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+class ProfileCompany(models.Model):
+    profile = models.ForeignKey(Profile,on_delete=models.CASCADE)
+    company = models.ForeignKey(Company,on_delete=models.CASCADE)
 
 class House(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)

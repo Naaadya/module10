@@ -24,9 +24,9 @@ SECRET_KEY = config("SECRET_KEY") # this is to replace the secret key you cut aw
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-#DEBUG = True
+DEBUG = True
 
-ALLOWED_HOSTS = ['naaadya.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'naaadya.pythonanywhere.com']
 
 
 # Application definition

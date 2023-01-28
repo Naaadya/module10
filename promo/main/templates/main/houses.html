@@ -119,6 +119,7 @@
         </tbody>
       </table>
     <br>
+    
     <form method="POST" class="form-group" style="width: 400px;">
         {% csrf_token %}
         <!--{{ form.name }}-->
@@ -129,6 +130,25 @@
         </div>
         {{ form.errors.name }}
         <button type="submit" class="btn btn-primary">Создать адрес</button>
+    </form>
+    <p><strong>список пользователей компании:</strong></p>
+    <div class="card card-body" style="width: 400px;">
+      {% for profile_company in companyUsers %}
+        <p>{{ profile_company.profile.name }}</p>
+      {% endfor %}
+    </div>
+    <form method="POST" class="form-group" style="width: 400px;" action="/add-user-to-company/{{company_id}}">
+      {% csrf_token %}
+      <input type="hidden" name="company_id" value="{{company_id}}">
+      <div class="form-group">
+        <label for="exampleFormControlSelect1">Выберите пользователя:</label>
+        <select class="form-control" id="user_select_id" name="user_select">
+          {% for profile in profiles %}
+            <option id="{{ profile.id }}" value="{{ profile.id }}">{{ profile.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Добавить пользователя</button>
     </form>
 </div>
 {% endblock %}
