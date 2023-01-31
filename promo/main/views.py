@@ -270,13 +270,13 @@ class OpenItemHtmlModel:
         self.houseId = houseId
         self.houseAddress = houseAddress
         self.total = total
-        if opened is not None:
+        if opened is not None and total != 0:
             self.opened = str(opened)
             self.openedPercent = f"{round(opened * 100/total)}%"
         else:
             self.opened = "-"
             self.openedPercent = "-"
-        if closed is not None:
+        if closed is not None and total!=0:
             self.closed = str(closed)
             self.closedPercent = f"{round(closed * 100/total)}%"
         else:
