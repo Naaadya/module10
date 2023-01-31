@@ -243,7 +243,7 @@ class ReactionItemHtmlModel:
             self.neutral = str(neutral)
         else:
             self.neutral = "-"
-        if neutral is not None:
+        if neutral is not None and total != 0:
             self.neutralPercent = f"{round(neutral * 100/total)}%"
         else:
             self.neutralPercent = "-"
@@ -251,7 +251,7 @@ class ReactionItemHtmlModel:
             self.positive = str(positive)
         else:
             self.positive = "-"
-        if positive is not None:
+        if positive is not None and total != 0:
             self.positivePercent = f"{round(positive * 100/total)}%"
         else:
             self.positivePercent = "-"
@@ -259,7 +259,7 @@ class ReactionItemHtmlModel:
             self.negative = str(negative)
         else:
             self.negative = "-"
-        if negative is not None:
+        if negative is not None and total != 0:
             self.negativePercent = f"{round(negative * 100/total)}%"
         else:
             self.negativePercent = "-"
