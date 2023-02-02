@@ -18,35 +18,35 @@ from django.utils import timezone
 
 
 
-def createUser(request):
+def createUser(request):     # регистрация пользователя 
     if request.method == 'POST':
-        username = request.POST['login']
-        password = request.POST['password']
+        username = request.POST['login']      # достаем данные формы из Post запроса
+        password = request.POST['password']   
         email = request.POST['email']
-        user = User.objects.create_user(username=username, email=email, password=password)
+        user = User.objects.create_user(username=username, email=email, password=password) # создаем пользователя в админке
         if user is not None:
-            profile = Profile()
+            profile = Profile()    # записываем в таблицу и привязываем к пользователю админки
             profile.user = user
             profile.name = request.POST['name']
             profile.email = email
             profile.surname = request.POST['surname']
             profile.phone = request.POST['phone']
             profile.save()
-            login(request, user)
+            login(request, user) # создается сессия в админке + записывается сессионная кука для браузера
             # Redirect to a success page.
-            return redirect("/company/")
+            return redirect("/company/")  # перенаправление браузера в указанный url
         # Return an 'invalid login' error message.
         return render(request,"main/login.html")
     else:
         return  HttpResponse('unknown method')
 
-def login_page(request):
+def login_page(request):  # страница логин, самая первая
     if request.method == 'GET':
         return render(request,"main/login.html")
     elif request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=username, password=password) # проверка, что такой пользователь есть в базе (аутентификация)
         if user is not None:
             login(request, user)
             # Redirect to a success page.
@@ -56,31 +56,31 @@ def login_page(request):
     else:
         return  HttpResponse('unknown method')
 
-def registerUser(request):
+def registerUser(request): # Get запрос для регистрации
         return render(request,"main/register.html")
         
  
 
-def logout_page(request):
+def logout_page(request): # выход пользователя
     if request.user.is_authenticated:
         logout(request)
     return redirect("/")
 
-def profile(request):
+def profile(request): # редактирование профиля
     if request.user.is_authenticated:
         user = User.objects.get(id=request.user.id)
-        profile = Profile.objects.get(user_id=request.user.id)
+        profile = Profile.objects.get(user_id=request.user.id) # request.user - авторизованный пользователь
         if request.method == "POST":
             profile.email = request.POST['email']
             profile.name = request.POST['name']
             profile.surname = request.POST['surname']
             profile.phone = request.POST['phone']
             profile.save()
-        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile}
+        data = {"name": user.username, "lastlogin": user.last_login, "email": user.email, "profile": profile}  # данные для отрисовки html
         return render(request,"main/profile.html", context=data)
     return  HttpResponse('unauthorized access!')
 
-def companies(request):
+def companies(request): # создание компании
     if request.user.is_authenticated:
         
         user = User.objects.get(id=request.user.id)
@@ -91,9 +91,9 @@ def companies(request):
             if form.is_valid():
                 #Сохранение компании в БД
                 company = Company()
-                company.name = form.cleaned_data['name']
+                company.name = form.cleaned_data['name'] # данные формы после валидации
                 company.save()
-                profile_company = ProfileCompany()
+                profile_company = ProfileCompany()  # связка между профилем и компанией таблицы, для добавления нескольких пользователей в компанию
                 profile_company.company_id = company.id
                 profile_company.profile_id = profile.id
                 profile_company.save()
@@ -101,7 +101,7 @@ def companies(request):
                 return redirect("/company/")
         else:
             form = CompanyForm() # GET метод - создаём пустую форму
-        companies = ProfileCompany.objects.select_related("company").filter(profile_id=profile.id)
+        companies = ProfileCompany.objects.select_related("company").filter(profile_id=profile.id) # Join таблицы через ORM
         #print(connection.queries) #выводим sql запросы которые генерирует orm
         print(companies.query)
         
@@ -114,16 +114,19 @@ def deleteCompany(request):
     if request.user.is_authenticated and request.method == "POST":
         user = User.objects.get(id=request.user.id)
         profile = Profile.objects.get(user_id=request.user.id)
-        company_id = int(request.POST['company_id'])
-        company = Company.objects.get(id=company_id)
-        if company.profile_id != profile.id:#удалять можно только свои компании
+        id = int(request.POST['company_id'])
+        profileCompany = ProfileCompany.objects.get(id=id)
+        allowedProfiles = ProfileCompany.objects.filter(company_id=profileCompany.company_id, profile_id=profile.id)
+        if allowedProfiles.__len__ == 0:#удалять можно только свои компании
             return  HttpResponse('unauthorized access!')
         with connection.cursor() as cursor:
-            res_a = cursor.execute(f'''Delete from main_apartment where id in (SELECT a.id as a_id FROM main_company as c inner join main_house h on h.company_id = c.id inner join main_apartment a on a.house_id=h.id where c.id={company_id})''')
+            res_a = cursor.execute(f'''Delete from main_apartment where id in (SELECT a.id as a_id FROM main_company as c inner join main_house h on h.company_id = c.id inner join main_apartment a on a.house_id=h.id where c.id={profileCompany.company_id})''')
             print(f"удалено {res_a.rowcount} строк из таблицы main_apartment")
-            res_h = cursor.execute(f'''Delete from main_house where id in (SELECT h.id as h_id FROM main_company as c inner join main_house h on h.company_id = c.id where c.id={company_id})''')
+            res_h = cursor.execute(f'''Delete from main_house where id in (SELECT h.id as h_id FROM main_company as c inner join main_house h on h.company_id = c.id where c.id={profileCompany.company_id})''')
             print(f"удалено {res_h.rowcount} строк из таблицы main_house")
-            res_c = cursor.execute(f'''Delete from main_company where id in ({company_id})''')
+            res_c = cursor.execute(f'''Delete from main_profilecompany where id in ({profileCompany.id})''')
+            print(f"удалено {res_c.rowcount} строк из таблицы main_profilecompany")
+            res_c = cursor.execute(f'''Delete from main_company where id in ({profileCompany.company_id})''')
             print(f"удалено {res_c.rowcount} строк из таблицы main_company")
         return redirect("/company/")
     return  HttpResponse('unauthorized access!')
