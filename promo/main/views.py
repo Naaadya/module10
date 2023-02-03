@@ -110,18 +110,21 @@ def companies(request): # создание компании
     return  HttpResponse('unauthorized access!')
 
 
-def deleteCompany(request):
+def deleteCompany(request): #удаление компаний
     if request.user.is_authenticated and request.method == "POST":
         user = User.objects.get(id=request.user.id)
         profile = Profile.objects.get(user_id=request.user.id)
         id = int(request.POST['company_id'])
+
+        #удалять можно только свои компании
         profileCompany = ProfileCompany.objects.get(id=id)
         allowedProfiles = ProfileCompany.objects.filter(company_id=profileCompany.company_id, profile_id=profile.id)
-        if allowedProfiles.__len__ == 0:#удалять можно только свои компании
+        if allowedProfiles.__len__ == 0:
             return  HttpResponse('unauthorized access!')
-        with connection.cursor() as cursor:
+        
+        with connection.cursor() as cursor: # соединение с базой данных, обьект cursor
             res_a = cursor.execute(f'''Delete from main_apartment where id in (SELECT a.id as a_id FROM main_company as c inner join main_house h on h.company_id = c.id inner join main_apartment a on a.house_id=h.id where c.id={profileCompany.company_id})''')
-            print(f"удалено {res_a.rowcount} строк из таблицы main_apartment")
+            print(f"удалено {res_a.rowcount} строк из таблицы main_apartment") # поэтапно удаляем строки компаний из баззы данных 
             res_h = cursor.execute(f'''Delete from main_house where id in (SELECT h.id as h_id FROM main_company as c inner join main_house h on h.company_id = c.id where c.id={profileCompany.company_id})''')
             print(f"удалено {res_h.rowcount} строк из таблицы main_house")
             res_c = cursor.execute(f'''Delete from main_profilecompany where id in ({profileCompany.id})''')
@@ -131,7 +134,7 @@ def deleteCompany(request):
         return redirect("/company/")
     return  HttpResponse('unauthorized access!')
 
-def houses(request, company_id):
+def houses(request, company_id): # страница домов
     if request.user.is_authenticated:
         if request.method == "POST":
             form = companyDetailsForm(request.POST)
@@ -146,7 +149,7 @@ def houses(request, company_id):
 
         houses = House.objects.filter(company_id=company_id)
         user = User.objects.get(id=request.user.id)
-        profile = Profile.objects.get(user_id=request.user.id)
+        profile = Profile.objects.get(user_id=request.user.id) # вызываем данные из баззы данных пользователя
 
         #=======statistics===========
         reactions_by_h = Apartment.objects.raw(''' select total.id, total.house_id, total.address, total.total_reaction, neutral.neutral_reaction, positive.positive_reaction, negative.negative_reaction  FROM
@@ -159,7 +162,7 @@ as positive on total.house_id = positive.house_id left join
 (SELECT count(*) as negative_reaction, house_id from main_apartment GROUP BY house_id, reaction having reaction=2)
 as negative on total.house_id = negative.house_id ''')
         
-        reactions_by_house = []
+        reactions_by_house = [] # реакции домов, создаем новый список
         total_reactions = 0
         neutral_reactions = 0
         positive_reactions = 0
@@ -239,7 +242,7 @@ def deleteHouse(request,company_id):
         return redirect(f"/company/{company_id}")
     return  HttpResponse('unauthorized access!')
 
-class ReactionItemHtmlModel:
+class ReactionItemHtmlModel: # создаем новый класс для работы со статистикой и отображения в html
     def __init__(self, houseId, houseAddress, total, neutral, positive, negative):
         self.houseId = houseId
         self.houseAddress = houseAddress
@@ -290,7 +293,7 @@ class OpenItemHtmlModel:
 
     
 
-def apartments(request,house_id,company_id):
+def apartments(request,house_id,company_id): # добавление характеристик адресов на страничке apartments
     if request.user.is_authenticated:
         if request.method == "POST":
             form = houseDetailsForm(request.POST)

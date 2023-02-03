@@ -12,11 +12,6 @@
 {% endblock %}
 {% block content%}
 <div class="container">
-    <!--<ul class="nav justify-content-end">
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Logout</a>
-        </li>
-      </ul>-->
    <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="/company">Companies</a></li>
@@ -77,18 +72,11 @@
             <td scope="row">{{ total_opened.opened }} ({{ total_opened.openedPercent }})</td>
             <td scope="row">{{ total_opened.closed }} ({{ total_opened.closedPercent }})</td>
           </tr>
-          <!--<tr>
-            <td>Total</td>
-            <td scope="row">{{ total_reactions.neutral }} ({{ total_reactions.neutralPercent }})</td>
-            <td scope="row">{{ total_reactions.positive }} ({{ total_reactions.positivePercent }})</td>
-            <td scope="row">{{ total_reactions.negative }} ({{ total_reactions.negativePercent }})</td>
-         </tr>-->
       </tbody>
     </table>
     <br>
     <form method="POST" class="form-group" style="width: 400px;">
         {% csrf_token %}
-        <!--{{ form.name }}-->
         <div class="form-group">
             <label for="name">Адрес</label>
             <input type="text" class="form-control" placeholder="Введите адрес" name="address" maxlength="200" required="" id="id_address">
